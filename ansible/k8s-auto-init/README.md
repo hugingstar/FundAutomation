@@ -69,49 +69,49 @@ ansible-playbook -i /etc/ansible/hosts main.yaml
 
 **(1) OS 커널 및 환경 최적화** 
     
-    ```bash
+```bash
     ansible-playbook playbooks/01-disable-swap.yaml
     ansible-playbook playbooks/02-sysctl-k8s-config.yaml
-    ```
+```
     
-    - **실행 확인**
+- **실행 확인**
     
-    ```bash
+```bash
     # 1. 스왑 메모리 비활성화 확인 
     free -h  # Swap 항목이 0B인지 확인
     
     # 2. 커널 모듈 및 네트워크 설정 확인 
     lsmod | grep br_netfilter  # 모듈 로드 확인
     sysctl net.bridge.bridge-nf-call-iptables  # 값이 1인지 확인
-    ```
+```
 <br>
 
 **(2) 컨테이너 런타임 설치 (Script 연동)**
     
-    ```bash
+```bash
     # /scripts/install-docker.sh가 각 노드에서 자동 실행됨
     ansible-playbook playbooks/03-setup-container-runtime.yaml
-    ```
+```
     
-    - **실행 확인**
+- **실행 확인**
     
-    ```bash
+```bash
     # Docker/Containerd 서비스 상태 및 버전 확인 
     sudo systemctl status containerd  # 서비스 실행 중(Active) 확인
     docker version  # 또는 containerd --version 확인
-    ```
+```
 <br>
 
 **(3) k8s 바이너리 설치 및 마스터 초기화** 
     
-    ```bash
+```bash
     ansible-playbook playbooks/04-k8s-binary-setup.yaml
     ansible-playbook playbooks/05-k8s-master-init.yaml
-    ```
+```
     
-    - **실행 확인**
+- **실행 확인**
     
-    ```bash
+  ```bash
     # 1. 설치된 바이너리 버전 일치 확인 
     kubeadm version
     kubelet --version
@@ -119,19 +119,19 @@ ansible-playbook -i /etc/ansible/hosts main.yaml
     # 2. 쿠버네티스 Control Plane 확인 
     kubectl get pods -n kube-system  # apiserver, etcd, scheduler 등이 Running인지 확인
     ls /etc/kubernetes/admin.conf    # 관리자 설정 파일 생성 확인
-    ```
+  ```
 <br>
 
 **(4) 네트워크(CNI) 배포 및 워커 노드 조인** 
     
-    ```bash
+```bash
     ansible-playbook playbooks/06-install-calico.yaml
     ansible-playbook playbooks/07-k8s-worker-join.yaml
-    ```
+```
     
-    - **실행 확인**
+- **실행 확인**
     
-    ```bash
+```bash
     # 1. 네트워크 플러그인 파드 상태 확인
     kubectl get pods -n kube-system -l k8s-app=calico-node
     # 모든 노드 수만큼 calico-node 파드가 생성되고 Running 상태여야 함
@@ -139,7 +139,7 @@ ansible-playbook -i /etc/ansible/hosts main.yaml
     # 2. 클러스터 노드 리스트 및 역할 확인
     kubectl get nodes
     # Master 노드 외에 Worker 노드들이 추가되었는지, STATUS가 Ready인지 확인
-    ```
+```
 <br>
 
 ### 3. 최종 상태 확인
